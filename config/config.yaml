@@ -1,0 +1,97 @@
+# ============================================================================
+# MRP configuration — single source of truth for assets, dates, and parameters.
+# FMP ticker conventions differ from Yahoo Finance:
+#   indices use a ^ prefix, commodities use a *USD suffix, crypto uses *USD.
+# ============================================================================
+
+data:
+  source: fmp
+  # Global pull window; each asset is clipped to its own availability on load.
+  start_date: "1990-01-01"
+  end_date: null            # null => up to today
+  raw_dir: data/raw
+  processed_dir: data/processed
+
+# Assets we forecast (prediction targets).
+targets:
+  sp500:
+    fmp_symbol: "^GSPC"
+    name: "S&P 500 Index"
+    asset_class: equity_index
+  gold:
+    fmp_symbol: "GCUSD"
+    name: "Gold (spot, USD)"
+    asset_class: commodity
+  bitcoin:
+    fmp_symbol: "BTCUSD"
+    name: "Bitcoin (USD)"
+    asset_class: crypto
+
+# Macro / volatility signals used as FEATURES only (not forecast targets).
+signals:
+  vix:
+    fmp_symbol: "^VIX"
+    name: "CBOE Volatility Index"
+    endpoint: eod
+  treasury:
+    name: "US Treasury Yields (10Y, 2Y)"
+    endpoint: treasury     # uses /stable/treasury-rates (^TNX is gated on this plan)
+    tenors: [year2, year10]
+
+features:
+  return_type: log          # log | simple
+  rolling_vol_windows: [5, 21]
+  moving_average_windows: [10, 50]
+  use_rsi: true
+  use_macd: true
+  use_volume: false         # FMP volume coverage is inconsistent pre-1993 (gold) / pre-2016 (BTC)
+  merge_signals: [vix, treasury]  # signals merged onto each target by date
+
+split:
+  train_frac: 0.70
+  scheme: chronological     # no shuffling for time series
+  walk_forward_folds: 5
+
+hmm:
+  n_states: 4               # primary model (chosen: balance of BIC fit + interpretability)
+  n_states_candidates: [2, 3, 4, 5, 6]   # reported for BIC model-selection table
+  sensitivity_states: [3, 5]             # alternatives to report for robustness
+  observation_features: [log_return, vol_21]
+  covariance_type: full
+  n_iter: 200
+  random_state: 42
+
+lstm:
+  window: 60
+  units: 50
+  layers: 2
+  dropout: 0.2
+  epochs: 50
+  batch_size: 32
+  learning_rate: 0.001
+  seeds: [0, 1, 2]          # multiple runs to reduce randomness
+
+tft:
+  window: 60                # encoder length (match LSTM)
+  hidden_size: 32
+  attention_head_size: 4
+  dropout: 0.2
+  hidden_continuous_size: 16
+  learning_rate: 0.001
+  batch_size: 64
+  max_epochs: 40
+  patience: 6               # early-stopping patience on val loss
+  seeds: [0, 1, 2]          # multi-seed ensemble (match LSTM)
+
+arima:
+  max_p: 5
+  max_q: 5
+  d: null                   # null => auto-select via differencing test
+
+evaluation:
+  horizon: 1                # predict next-day
+  metrics: [mse, mae, directional_accuracy, f1]
+  significance_test: paired_ttest
+  alpha: 0.05
+
+seed: 42

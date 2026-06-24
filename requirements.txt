@@ -1,0 +1,39 @@
+# Core
+numpy>=1.26,<2.2
+pandas>=2.1
+pyyaml>=6.0
+python-dotenv>=1.0
+requests>=2.31
+tqdm>=4.66
+
+# Modeling
+scipy>=1.11
+scikit-learn>=1.4
+hmmlearn>=0.3.2
+statsmodels>=0.14        # ARIMA
+pmdarima>=2.0            # auto_arima (optional helper)
+
+# Deep learning (LSTM) — TensorFlow/Keras
+tensorflow>=2.15; platform_system != "Darwin" or platform_machine != "arm64"
+tensorflow-macos>=2.15; platform_system == "Darwin" and platform_machine == "arm64"
+
+# Technical indicators
+ta>=0.11
+
+# Viz / notebooks
+matplotlib>=3.8
+seaborn>=0.13
+jupyter>=1.0
+jupytext>=1.16          # pair .py <-> .ipynb, execute notebooks
+tabulate>=0.9           # DataFrame.to_markdown for findings reports
+
+# Storage
+pyarrow>=15.0            # parquet
+
+# Deep learning (TFT) — PyTorch
+torch>=2.2
+lightning>=2.2
+pytorch-forecasting>=1.7   # tested against 1.7.0 (Prediction.output/.index API)
+
+# Testing
+pytest>=8.0

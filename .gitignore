@@ -1,0 +1,39 @@
+# Secrets — never commit API keys
+.env
+*.key
+
+# Data (regenerable from FMP; keep repo light). Comment out to version processed data.
+data/raw/*
+data/processed/*
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+.ipynb_checkpoints/
+*.egg-info/
+.pytest_cache/
+
+# Models / artifacts
+*.h5
+*.keras
+*.pkl
+*.joblib
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
+
+# Reports build artifacts (keep source figures/markdown)
+reports/figures/*.tmp
+
+# PyTorch Lightning run logs
+lightning_logs/
+
+# Local editor / tooling state
+docs/scratch/
